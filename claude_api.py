@@ -9,7 +9,7 @@ CLAUDE_API_KEY = os.environ.get("CLAUDE_API_KEY")
 if not CLAUDE_API_KEY:
     raise ValueError("CLAUDE_API_KEY가 설정되지 않았습니다.")
 
-client = anthropic.Client(api_key=CLAUDE_API_KEY)
+
 
 MODEL_NAME = "claude-2"
 MAX_TOKENS = 300
