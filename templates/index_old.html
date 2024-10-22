@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude와 대화하기</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #2c2c2c;
+            max-width: 800px;
+            margin: 3em auto;
+            padding: 2em;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            background-color: #333;
+            border-radius: 15px;
+            line-height: 1.6;
+            color: #f0f0f0;
+        }
+        h1 {
+            color: #00bfff;
+            text-align: center;
+            margin-bottom: 1.5em;
+            font-weight: bold;
+        }
+        .language-toggle {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        .language-toggle button {
+            margin: 0 5px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background-color: #444;
+            color: #f0f0f0;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #f0f0f0;
+        }
+        .form-control {
+            background-color: #555;
+            color: #f0f0f0;
+            border: 1px solid #666;
+        }
+        .form-control::placeholder {
+            color: #bbb;
+        }
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+            border-radius: 25px;
+            padding: 15px;
+            font-size: 1.2em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #218838;
+            transform: translateY(-3px);
+        }
+        .alert {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background-color: #444;
+            color: #f0f0f0;
+        }
+        .history-list {
+            margin-top: 2em;
+        }
+        .history-item {
+            padding: 1em;
+            border-radius: 10px;
+            background-color: #444;
+            margin-bottom: 1em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .history-item:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-toggle">
+        <button class="btn btn-outline-light" onclick="switchLanguage('ko')">한국어</button>
+        <button class="btn btn-outline-light" onclick="switchLanguage('en')">English</button>
+    </div>
+
+    <h1 id="title">Claude와 대화하기</h1>
+    
+    <div class="card p-4 mb-4">
+        <form action="/generate" method="post">
+            <div class="mb-3">
+                <label for="prompt" id="prompt-label" class="form-label">질문을 입력해주세요:</label>
+                <textarea id="prompt" name="prompt" rows="4" class="form-control" placeholder="여기에 질문을 입력하세요..."></textarea>
+            </div>
+            <button type="submit" id="submit-button" class="btn btn-submit w-100">응답 받기</button>
+        </form>
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-danger mt-4" id="error-message">{{ error_message }}</div>
+    {% endif %}
+
+    {% if response_text %}
+    <div class="alert alert-info mt-4" id="response-text">
+        <h2>Claude의 응답:</h2>
+        <p>{{ response_text }}</p>
+    </div>
+    {% endif %}
+
+    <div class="history-list">
+        <h2>히스토리 목록</h2>
+        {% for text in texts %}
+        <div class="history-item" onclick="viewDetail('{{ text.id }}')">
+            <strong>프롬프트:</strong> {{ text.prompt }}<br>
+            <strong>응답:</strong> {{ text.response_text | truncate(50) }}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function switchLanguage(lang) {
+            if (lang === 'ko') {
+                document.getElementById('title').textContent = 'Claude와 대화하기';
+                document.getElementById('prompt-label').textContent = '질문을 입력해주세요:';
+                document.getElementById('prompt').placeholder = '여기에 질문을 입력하세요...';
+                document.getElementById('submit-button').textContent = '응답 받기';
+                if (document.getElementById('response-text')) {
+                    document.getElementById('response-text').querySelector('h2').textContent = 'Claude의 응답:';
+                }
+                if (document.getElementById('error-message')) {
+                    document.getElementById('error-message').textContent = '{{ error_message }}';
+                }
+            } else if (lang === 'en') {
+                document.getElementById('title').textContent = 'Chat with Claude';
+                document.getElementById('prompt-label').textContent = 'Enter your question:';
+                document.getElementById('prompt').placeholder = 'Enter your question here...';
+                document.getElementById('submit-button').textContent = 'Get Response';
+                if (document.getElementById('response-text')) {
+                    document.getElementById('response-text').querySelector('h2').textContent = 'Claude Response:';
+                }
+                if (document.getElementById('error-message')) {
+                    document.getElementById('error-message').textContent = '{{ error_message }}';
+                }
+            }
+        }
+
+        function viewDetail(id) {
+            window.location.href = `/detail/${id}`;
+        }
+    </script>
+</body>
+</html>

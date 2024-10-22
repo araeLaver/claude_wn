@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude와 대화하기 - 상세 페이지</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #2c2c2c;
+            color: #f0f0f0;
+            padding: 20px;
+        }
+        .card {
+            background-color: #444;
+            color: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .btn-primary {
+            background-color: #00bfff;
+            border: none;
+        }
+        .message {
+            margin-bottom: 15px;
+        }
+        .message p {
+            margin: 0;
+        }
+        .user-message {
+            text-align: right;
+        }
+        .assistant-message {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Claude와의 대화 상세보기</h1>
+        <div class="card p-4 mb-4">
+            <h2>대화 내용</h2>
+            {% for msg in messages %}
+                <div class="message {% if msg.role == 'user' %}user-message{% else %}assistant-message{% endif %}">
+                    <p><strong>{{ '사용자' if msg.role == 'user' else 'Claude' }}:</strong> {{ msg.content }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="card p-4">
+            <h2>새로운 메시지 보내기</h2>
+            <form action="{{ url_for('generate') }}" method="post">
+                <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
+                <div class="mb-3">
+                    <label for="prompt" class="form-label">메시지를 입력하세요:</label>
+                    <textarea id="prompt" name="prompt" rows="4" class="form-control" placeholder="여기에 메시지를 입력하세요..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">전송하기</button>
+            </form>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-light mt-4">메인 페이지로 돌아가기</a>
+    </div>
+</body>
+</html>
