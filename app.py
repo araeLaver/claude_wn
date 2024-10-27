@@ -136,5 +136,9 @@ def test_db():
     except Exception as e:
         return f'데이터베이스에 데이터 저장 실패: {e}'
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Local 실행
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))
