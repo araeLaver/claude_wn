@@ -1,4 +1,3 @@
-<!-- 상세 페이지 (detail.html) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -25,29 +24,84 @@
             background-color: #00bfff;
             border: none;
         }
+        .message {
+            margin-bottom: 15px;
+        }
+        .message p {
+            margin: 0;
+        }
+        .message p {
+            margin: 0;
+            white-space: pre-wrap; /* 개행 문자 유지 */
+        }
+        .user-message {
+            text-align: right;
+        }
+        .assistant-message {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center mb-4">Claude와의 대화 상세보기</h1>
         <div class="card p-4 mb-4">
-            <p><strong>프롬프트:</strong></p>
-            <p>{{ conversation.prompt }}</p>
-            <p><strong>응답:</strong></p>
-            <p>{{ conversation.response }}</p>
+            <h2>대화 내용</h2>
+            {% for msg in messages %}
+                <div class="message {% if msg.role == 'user' %}user-message{% else %}assistant-message{% endif %}">
+                    <p><strong>{{ '사용자' if msg.role == 'user' else 'Claude' }}:</strong> {{ msg.content | e }}</p>
+                </div>
+            {% endfor %}
         </div>
         <div class="card p-4">
-            <h2>다시 질문하기</h2>
-            <form action="/generate" method="post">
+            <h2>새로운 메시지 보내기</h2>
+            <form action="{{ url_for('generate') }}" method="post" id="message_form">
                 <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
                 <div class="mb-3">
-                    <label for="new_prompt" class="form-label">새로운 질문을 입력해주세요:</label>
-                    <textarea id="new_prompt" name="prompt" rows="4" class="form-control" placeholder="여기에 질문을 입력하세요..."></textarea>
+                    <label for="prompt" class="form-label">메시지를 입력하세요:</label>
+                    <textarea id="prompt" name="prompt" rows="4" class="form-control" placeholder="여기에 메시지를 입력하세요..."></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">응답 받기</button>
+                <button type="submit" class="btn btn-primary w-100">전송하기</button>
             </form>
         </div>
-        <a href="/" class="btn btn-outline-light mt-4">메인 페이지로 돌아가기</a>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-light mt-4">메인 페이지로 돌아가기</a>
     </div>
+
+    <!-- JavaScript 추가 -->
+    <script>
+        // 엔터 키로 폼 제출하기
+        document.getElementById('prompt').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                document.getElementById('message_form').submit();
+            }
+        });
+    </script>
 </body>
 </html>
+<!-- <body>
+    <div class="container">
+        <h1 class="text-center mb-4">Claude와의 대화 상세보기</h1>
+        <div class="card p-4 mb-4">
+            <h2>대화 내용</h2>
+            {% for msg in messages %}
+                <div class="message {% if msg.role == 'user' %}user-message{% else %}assistant-message{% endif %}">
+                    <p><strong>{{ '사용자' if msg.role == 'user' else 'Claude' }}:</strong> {{ msg.content }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="card p-4">
+            <h2>새로운 메시지 보내기</h2>
+            <form action="{{ url_for('generate') }}" method="post">
+                <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
+                <div class="mb-3">
+                    <label for="prompt" class="form-label">메시지를 입력하세요:</label>
+                    <textarea id="prompt" name="prompt" rows="4" class="form-control" placeholder="여기에 메시지를 입력하세요..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">전송하기</button>
+            </form>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-outline-light mt-4">메인 페이지로 돌아가기</a>
+    </div>
+</body>
+</html> -->

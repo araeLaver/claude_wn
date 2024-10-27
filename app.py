@@ -10,7 +10,8 @@ from flask_migrate import Migrate
 from sqlalchemy import text
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 app = Flask(__name__)
@@ -31,7 +32,7 @@ app.secret_key = os.environ.get('SECRET_KEY')
 # 홈 페이지
 @app.route('/')
 def index():
-    user = User.query.get(1)  # 데모를 위해 사용자 ID 1 사용
+    user = db.session.get(User, 1)  # 데모를 위해 사용자 ID 1 사용
     if not user:
         user = User(username='Test User', email='test@example.com')
         db.session.add(user)
@@ -40,25 +41,37 @@ def index():
     conversations = Conversation.query.filter_by(user_id=user.id).order_by(Conversation.created_at.desc()).all()
     return render_template('main.html', conversations=conversations)
 
-# 대화 생성 및 메시지 처리 //
+# 대화 생성 및 메시지 처리
 @app.route('/generate', methods=['POST'])
 def generate():
-    user = User.query.get(1)  # 데모를 위해 사용자 ID 1 사용
+    user = db.session.get(User, 1)  # 데모를 위해 사용자 ID 1 사용
 
     prompt = request.form['prompt']
     conversation_id = request.form.get('conversation_id')
 
     if conversation_id:
-        conversation = Conversation.query.get(conversation_id)
+        try:
+            conversation_id = int(conversation_id)
+            conversation = Conversation.query.get(conversation_id)
+            if not conversation:
+                # 존재하지 않는 conversation_id인 경우 새로운 Conversation 생성
+                conversation = Conversation(user_id=user.id)
+                db.session.add(conversation)
+                db.session.commit()  # 커밋하여 데이터베이스에 저장
+        except ValueError:
+            # conversation_id가 유효한 정수가 아닌 경우 처리
+            conversation = Conversation(user_id=user.id)
+            db.session.add(conversation)
+            db.session.commit()  # 커밋하여 데이터베이스에 저장
     else:
         conversation = Conversation(user_id=user.id)
         db.session.add(conversation)
-        db.session.commit()
+        db.session.commit()  # 커밋하여 데이터베이스에 저장
 
     # 사용자 메시지 저장
     user_message = Message(conversation_id=conversation.id, role='user', content=prompt)
     db.session.add(user_message)
-    db.session.commit()
+    db.session.commit()  # 메시지 저장을 위한 커밋
 
     # 대화의 모든 메시지를 가져와 챗봇에게 전달
     messages = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.created_at).all()
@@ -70,9 +83,13 @@ def generate():
     # 챗봇 응답 메시지 저장
     assistant_message = Message(conversation_id=conversation.id, role='assistant', content=response_text)
     db.session.add(assistant_message)
-    db.session.commit()
+    db.session.commit()  # 응답 메시지 저장을 위한 커밋
 
     return redirect(url_for('detail', conversation_id=conversation.id))
+    #  return jsonify({'conversation_id': conversation.id, 'response': response_text})
+
+
+
 
 # 대화 상세 페이지
 @app.route('/detail/<int:conversation_id>')
@@ -98,7 +115,6 @@ def delete_conversation(conversation_id):
 def test_db_connection():
     try:
         # 데이터베이스에 간단한 쿼리 실행
-        # result = db.session.execute('SELECT 1')
         result = db.session.execute(text('SELECT 1'))
         # 결과 확인
         for row in result:

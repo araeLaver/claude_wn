@@ -45,29 +45,42 @@
         .btn-outline-light {
             margin-top: 10px;
         }
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+            display: inline-block;
+            vertical-align: bottom;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center mb-4">Claude와 대화하기</h1>
         <div class="card p-4 mb-4">
-            <form action="/generate" method="post">
-                <input type="hidden" name="conversation_id" value="{{ conversation.id if conversation else '' }}">
+            <form action="{{ url_for('generate') }}" method="post" id="message_form">
                 <div class="mb-3">
-                    <label for="prompt" class="form-label">질문을 입력해주세요:</label>
-                    <textarea id="prompt" name="prompt" rows="4" class="form-control" placeholder="여기에 질문을 입력하세요...">{% if conversation %}{{ conversation.prompt }}
-{{ conversation.response }}{% endif %}</textarea>
+                    <label for="prompt" class="form-label">메시지를 입력하세요:</label>
+                    <textarea id="prompt" name="prompt" rows="4" class="form-control" placeholder="메시지를 입력하고 Enter 키로 전송하세요. (줄바꿈: Shift + Enter)"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">응답 받기</button>
+                <button type="submit" class="btn btn-primary w-100">전송하기</button>
             </form>
         </div>
+        <h2 class="text-center mb-4">대화 목록</h2>
         <div class="history-container">
-            {% for text in texts %}
+            {% for convo in conversations %}
             <div class="history-card">
-                <p><strong>프롬프트:</strong> {{ text.prompt }}</p>
-                <p><strong>응답:</strong> {{ text.response | truncate(50) }}</p>
-                <a href="/detail/{{ text.id }}" class="btn btn-outline-light">상세보기</a>
-                <button class="btn btn-danger" onclick="deleteConversation('{{ text.id }}')">삭제</button>
+                <p><strong>대화 ID:</strong> {{ convo.id }}</p>
+                <p><strong>최근 메시지:</strong></p>
+                {% set last_message = convo.messages[-1] if convo.messages else None %}
+                {% if last_message %}
+                    <p class="truncate">{{ last_message.content | e }}</p>
+                {% else %}
+                    <p>메시지가 없습니다.</p>
+                {% endif %}
+                <a href="{{ url_for('detail', conversation_id=convo.id) }}" class="btn btn-outline-light">상세보기</a>
+                <button class="btn btn-danger" onclick="deleteConversation('{{ convo.id }}')">삭제</button>
             </div>
             {% endfor %}
         </div>
@@ -87,6 +100,15 @@
                 });
             }
         }
+
+                // 엔터 키로 폼 제출하기
+        document.getElementById('prompt').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                document.getElementById('message_form').submit();
+            }
+        });
+
     </script>
 </body>
 </html>

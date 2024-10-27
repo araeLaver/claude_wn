@@ -1,6 +1,8 @@
 # 가상환경 디렉토리
 venv/
 env/
+
+# .gitignore 파일 내용
 .env
 
 # 환경 변수 파일
@@ -14,3 +16,7 @@ migrations/
 
 # 기타 큰 파일 또는 디렉토리
 /path/to/large/file_or_directory
+
+# Python 관련
+__pycache__/
+*.pyc
